@@ -1,0 +1,32 @@
+﻿@page "/employees/delete/{id:int}"
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@using FrontendCartridges.Models
+@inject HttpClient Http
+@inject NavigationManager navigationManager
+
+<h3>Delete Employee</h3>
+<p>Confirm this action?</p>
+@*@<input @bind="Id" />*@
+<Button Name="Confirm" Width="100" OnClick="DeleteAction" HasActive="true"></Button>
+<Button Name="Cancel" Width="100" OnClick="Back" HasActive="true"></Button>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private async Task DeleteEmployee_() =>
+    await Http.DeleteAsync($"https://localhost:44371/api/employees/{Id}");
+
+    private void Back()
+    {
+        navigationManager.NavigateTo($"https://localhost:44312/employees");
+    }
+
+    private async Task DeleteAction()
+    {
+        await DeleteEmployee_();
+        Back();
+    }
+}

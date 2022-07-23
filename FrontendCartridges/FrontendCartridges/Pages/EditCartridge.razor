@@ -1,0 +1,107 @@
+﻿@page "/cartridges/edit/{id:int}"
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@using FrontendCartridges.Models
+@inject HttpClient Http
+@inject NavigationManager navigationManager
+
+@if (cartridge != null)
+{
+    <h3>Edit @cartridge.FullName Cartridge</h3>
+    <h6>Barcode: @cartridge.Barcode</h6>
+    @*<h6>Department: @cartridge.Events.OrderBy(x => x.EventDate).Last().ToDepartment.Name</h6>
+    <h6>Status: @cartridge.Events.OrderBy(x => x.EventDate).Last().Status.Name</h6>*@
+    <br />
+
+    <EditForm EditContext="@editContext" OnValidSubmit="@EditAction">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <h6>Select Type</h6>
+        @if (cartridgeTypes != null)
+        {
+            <InputSelect id="TypeId" @bind-Value="cartridge.TypeId">
+                @foreach (var cartridgeType in cartridgeTypes)
+                        {
+                    <option value="@cartridgeType.Id">@cartridgeType.FullName</option>
+                        }
+            </InputSelect>
+        }
+        <br />
+
+        <Button Type="submit" Name="Save" Width="100" />
+        <Button Type="button" Name="Delete" Width="100" OnClick="Delete" HasActive="true"></Button>
+        <Button Type="button" Name="Cancel" Width="100" OnClick="Back" HasActive="true"></Button>
+    </EditForm>
+
+    <table>
+        <tr>
+            <td>Date</td>
+            <td>Status</td>
+            <td>Employee</td>
+            <td>Mechanic</td>
+            <td>From</td>
+            <td>To</td>
+        </tr>
+        @foreach (var evt in cartridge.Events.OrderByDescending(x => x.EventDate))
+        {
+            <tr>
+                <td>@evt.EventDate</td>
+                <td>@evt.Status.Name</td>
+                @if (evt.Repair == null) {
+                    <td>@evt.Employee.FullName</td>
+                    <td>---</td>
+                }
+                else
+                {
+                    <td>---</td>
+                    <td>@evt.Repair.Mechanic.FullName</td>
+                }
+                <td>@evt.FromDepartment.Name</td>
+                <td>@evt.ToDepartment.Name</td>
+            </tr>
+        }
+    </table>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private EditContext editContext;
+    private IEnumerable<CartridgeType> cartridgeTypes;
+    private Cartridge cartridge;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cartridge = await Http.GetFromJsonAsync<Cartridge>($"https://localhost:44371/api/cartridges/{Id}");
+        cartridge.IsUniqueBarcode = true;
+        editContext = new(cartridge);
+        cartridgeTypes = await Http.GetFromJsonAsync<IEnumerable<CartridgeType>>("https://localhost:44371/api/cartridgetypes");
+    }
+
+    private async Task SaveCartridge()
+    {
+        await Http.PutAsJsonAsync($"https://localhost:44371/api/cartridges", cartridge);
+    }
+
+    private void Back()
+    {
+        navigationManager.NavigateTo("https://localhost:44312/cartridges");
+    }
+
+    private async Task EditAction()
+    {
+        if (editContext != null && editContext.Validate())
+        {
+            await SaveCartridge();
+            Back();
+        }
+    }
+
+    private void Delete()
+    {
+        navigationManager.NavigateTo($"https://localhost:44312/cartridges/delete/{Id}");
+    }
+}

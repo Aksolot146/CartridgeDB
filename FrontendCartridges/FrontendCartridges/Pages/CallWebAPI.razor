@@ -1,0 +1,117 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@using FrontendCartridges.Models
+@page "/call-web-api"
+@inject HttpClient Http
+
+<h3>CallWebAPI</h3>
+
+@if (departments == null)
+{
+    <p>No departments found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-center">Complete</th>
+                <th>Name</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr id="editRow" style="display:@editRowStyle">
+                <td class="text-center">
+                    <input type="checkbox" @bind="editDepartment.Name" />
+                </td>
+                <td>
+                    <input @bind="editDepartment.Name" />
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-success" @onclick="SaveDepartment">
+                        Save
+                    </button>
+                    <button class="btn btn-danger" @onclick="@(() => editRowStyle = "none")">
+                        Cancel
+                    </button>
+                </td>
+            </tr>
+            @foreach (var department in departments)
+            {
+                <tr>
+                    <td>@department.Name</td>
+                    <td class="text-center">
+                        <button class="btn btn-warning" @onclick="@(() => EditDepartment(department.Id))">
+                            Edit
+                        </button>
+                        <button class="btn btn-danger" @onclick="@(async () => await DeleteDepartment(department.Id))">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+            <tr id="addRow">
+                <td></td>
+                <td>
+                    <input @bind="newDepartmentName" placeholder="New Department" />
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-success" @onclick="@AddDepartment">
+                        Add
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+}
+
+@code {
+    private const string ServiceEndpoint = "https://localhost:44312/api/departments";
+    private Department[] departments;
+    private Department editDepartment = new Department();
+    private string editRowStyle = "none";
+    private string newDepartmentName;
+
+    protected override async Task OnInitializedAsync() => await GetDepartmentItems();
+
+    private async Task GetDepartmentItems() =>
+        departments = await Http.GetFromJsonAsync<Department[]>(ServiceEndpoint);
+
+    private void EditDepartment(int id)
+    {
+        editDepartment = departments.Single(i => i.Id == id);
+        editRowStyle = "table-row";
+    }
+
+    private async Task AddDepartment()
+    {
+        var addDepartment = new Department { Name = newDepartmentName };
+        await Http.PostAsJsonAsync(ServiceEndpoint, addDepartment);
+        newDepartmentName = string.Empty;
+        await GetDepartmentItems();
+        editRowStyle = "none";
+    }
+
+    private async Task SaveDepartment()
+    {
+        await Http.PutAsJsonAsync($"{ServiceEndpoint}/{editDepartment.Id}", editDepartment);
+        newDepartmentName = string.Empty;
+        await GetDepartmentItems();
+        editRowStyle = "none";
+    }
+
+    private async Task DeleteDepartment(int id)
+    {
+        await Http.DeleteAsync($"{ServiceEndpoint}/{id}");
+        await GetDepartmentItems();
+        editRowStyle = "none";
+    }
+
+    private class Department
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+}

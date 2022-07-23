@@ -1,0 +1,29 @@
+﻿.button {
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    margin: 2px 4px;
+    background-color: #3c6686;
+    color: #ffffff;
+    position: static;
+}
+    .button:hover {
+        background-color: #3c96c4;
+        color: #ffffff;
+    }
+
+.activeButton {
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    margin: 2px 4px;
+    background-color: #f7bd1a;
+    color: #000000;
+    position: static;
+}
+    .activeButton:hover {
+        background-color: #ffd300;
+        color: #000000;
+    }

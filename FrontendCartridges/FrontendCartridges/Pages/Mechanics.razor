@@ -1,0 +1,38 @@
+﻿@page "/mechanics"
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@using FrontendCartridges.Models
+@inject HttpClient Http
+@inject NavigationManager navigationManager
+
+<h3>Mechanics</h3>
+<Button Name="Add" Width="200" OnClick="Add"></Button>
+
+@if (mechanics == null)
+{
+    <p>No mechanics found.</p>
+}
+else
+{
+    <ul>
+        @foreach (var mechanic in mechanics)
+        {
+            <li>
+                <a href="@($"https://localhost:44312/mechanics/edit/{mechanic.Id}")">@mechanic.Id. @mechanic.FullName</a>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private Mechanic[] mechanics;
+
+    protected override async Task OnInitializedAsync() =>
+        mechanics = await Http.GetFromJsonAsync<Mechanic[]>("https://localhost:44371/api/mechanics");
+
+    private void Add()
+    {
+        navigationManager.NavigateTo("https://localhost:44312/mechanics/add");
+    }
+}
