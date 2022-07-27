@@ -1,0 +1,31 @@
+﻿<button class="@(IsActive ? "activeButton" : "button")" style="@(Width == 0 ? "" : $"width: {Width}px;")" type="@Type" @onclick="CallOnClick">@Name</button>
+
+@code {
+    [Parameter]
+    public string Type { get; set; }
+
+    [Parameter]
+    public string Name { get; set; }
+
+    [Parameter]
+    public int Width { get; set; }
+
+    [Parameter]
+    public bool IsActive { get; set; }
+
+    [Parameter]
+    public bool HasActive { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnClick { get; set; }
+
+    private async Task CallOnClick()
+    {
+        if (HasActive) IsActive = true;
+
+        if (OnClick.HasDelegate)
+        {
+            await OnClick.InvokeAsync();
+        }
+    }
+}

@@ -1,0 +1,55 @@
+﻿@page "/mechanics/add"
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@using FrontendCartridges.Models
+@using Microsoft.Extensions.Logging;
+@inject HttpClient Http
+@inject NavigationManager navigationManager
+@inject ILogger<NewMechanic> Logger
+
+<h3>New Mechanic</h3>
+
+<EditForm EditContext="@editContext" OnValidSubmit="@AddAction">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputText id="LastName" @bind-Value="addMechanic.LastName" placeholder="Last name" />
+    <br />
+    <InputText id="FirstName" @bind-Value="addMechanic.FirstName" placeholder="First name" />
+    <br />
+    <InputText id="MiddleName" @bind-Value="addMechanic.MiddleName" placeholder="Middle name" />
+    <br />
+
+    <Button Type="submit" Name="Add" Width="100" />
+    <Button Type="button" Name="Cancel" Width="100" OnClick="Back" HasActive="true"></Button>
+</EditForm>
+
+@code {
+    private EditContext editContext;
+    private Mechanic addMechanic = new Mechanic();
+
+    protected override async Task OnInitializedAsync()
+    {
+        editContext = new(addMechanic);
+    }
+
+    private async Task AddMechanic()
+    {
+        await Http.PostAsJsonAsync("https://localhost:44371/api/mechanics", addMechanic);
+    }
+
+    private void Back()
+    {
+        navigationManager.NavigateTo("https://localhost:44312/mechanics");
+    }
+
+    private async Task AddAction()
+    {
+        if (editContext != null && editContext.Validate())
+        {
+            await AddMechanic();
+            Back();
+        }
+    }
+}

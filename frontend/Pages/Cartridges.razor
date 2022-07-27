@@ -1,0 +1,60 @@
+﻿@page "/cartridges"
+@using System.Linq
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@using FrontendCartridges.Models
+@inject HttpClient Http
+@inject NavigationManager navigationManager
+
+<h3>Cartridges</h3>
+<Button Name="Add" Width="100" OnClick="Add"></Button>
+<Button Name="Manage" Width="100" OnClick="Manage"></Button>
+
+@if (cartridges == null)
+{
+    <p>No cartridges found.</p>
+}
+else
+{
+    @*<Button Name="Manage" Width="200" OnClick="Manage"></Button>*@
+    <table>
+        <tr>
+            <td>ID</td>
+            <td>Type</td>
+            <td>Barcode</td>
+            <td>Department</td>
+            <td>Status</td>
+        </tr>
+        @foreach (var cartridge in cartridges)
+        {
+            <tr>
+                <td>@cartridge.Id</td>
+                <td>@cartridge.FullName</td>
+                <td>@cartridge.Barcode</td>
+                <td>@cartridge.Events.OrderBy(x => x.EventDate).Last().ToDepartment.Name</td>
+                <td>@cartridge.Events.OrderBy(x => x.EventDate).Last().Status.Name</td>
+                <td><a href="@($"https://localhost:44312/cartridges/edit/{cartridge.Id}")">Edit</a></td>
+            </tr>
+        }
+    </table>
+}
+
+@code {
+    private Cartridge[] cartridges;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cartridges = await Http.GetFromJsonAsync<Cartridge[]>("https://localhost:44371/api/cartridges");
+    }
+
+    private void Add()
+    {
+        navigationManager.NavigateTo("https://localhost:44312/cartridges/add");
+    }
+
+    private void Manage()
+    {
+        navigationManager.NavigateTo("https://localhost:44312/cartridges/manage");
+    }
+}

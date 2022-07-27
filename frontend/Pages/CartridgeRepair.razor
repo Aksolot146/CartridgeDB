@@ -1,0 +1,83 @@
+﻿@page "/cartridges/manage/repair/{barcode:int}"
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@using FrontendCartridges.Models
+@inject HttpClient Http
+@inject NavigationManager navigationManager
+
+<h3>Cartridge Manager</h3>
+
+<EditForm EditContext="@editContext" OnValidSubmit="@Confirm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <h4>Repair cartridge...</h4>
+    <h6>Barcode: @Barcode</h6>
+    <br />
+
+    @if (cartridge != null)
+    {
+        <h6>Name: @cartridge.FullName</h6>
+    }
+    <br />
+
+    <h6>From Mechanic:</h6>
+    @if (mechanics != null)
+    {
+        <InputSelect id="MechanicId" @bind-Value="repair.MechanicId">
+            @foreach (var mechanic in mechanics)
+                {
+                <option value="@mechanic.Id">@mechanic.FullName</option>
+                }
+        </InputSelect>
+    }
+    <br />
+    <Button Type="submit" Name="OK" Width="100" />
+    <Button Type="button" Name="Write Off" Width="100" OnClick="WriteOff" HasActive="true"></Button>
+    <Button Type="button" Name="Cancel" Width="100" OnClick="Back" HasActive="true"></Button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int Barcode { get; set; }
+
+    private EditContext editContext;
+    private Cartridge cartridge;
+    private IEnumerable<Mechanic> mechanics;
+    private Repair repair = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        editContext = new(repair);
+        cartridge = await Http.GetFromJsonAsync<Cartridge>($"https://localhost:44371/api/cartridges/bybarcode/{Barcode}");
+        mechanics = await Http.GetFromJsonAsync<IEnumerable<Mechanic>>("https://localhost:44371/api/mechanics");
+    }
+
+    private void Back()
+    {
+        navigationManager.NavigateTo("https://localhost:44312/cartridges/manage");
+    }
+
+    private async Task Confirm()
+    {
+        if (editContext != null && editContext.Validate())
+        {
+            repair.CartridgeId = cartridge.Id;
+            await Http.PostAsJsonAsync("https://localhost:44371/api/repairs", repair);
+
+            Back();
+        }
+    }
+
+    private async Task WriteOff()
+    {
+        if (editContext != null && editContext.Validate())
+        {
+            repair.CartridgeId = cartridge.Id;
+            await Http.PostAsJsonAsync("https://localhost:44371/api/repairs/writeoff", repair);
+
+            Back();
+        }
+    }
+}

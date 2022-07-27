@@ -1,0 +1,73 @@
+﻿@page "/cartridges/manage/confirm/{barcode:int}"
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@using FrontendCartridges.Models
+@inject HttpClient Http
+@inject NavigationManager navigationManager
+
+<h3>Cartridge Manager</h3>
+
+<EditForm EditContext="@editContext" OnValidSubmit="@Confirm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <h4>Confirm repair...</h4>
+    <h6>Barcode: @Barcode</h6>
+    <br />
+
+    @if (cartridge != null)
+    {
+        <h6>Name: @cartridge.FullName</h6>
+    }
+
+    <br />
+    <h6>From Employee:</h6>
+    @if (employees != null)
+    {
+        <InputSelect id="EmployeeId" @bind-Value="evt.EmployeeId">
+            @foreach (var employee in employees)
+                {
+                <option value="@employee.Id">@employee.FullName</option>
+                }
+        </InputSelect>
+    }
+    <br />
+    <Button Type="submit" Name="OK" Width="100" />
+    <Button Type="button" Name="Cancel" Width="100" OnClick="Back" HasActive="true"></Button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int Barcode { get; set; }
+
+    private EditContext editContext;
+    private IEnumerable<Employee> employees;
+    private Cartridge cartridge;
+    private Event evt = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        editContext = new(evt);
+        cartridge = await Http.GetFromJsonAsync<Cartridge>($"https://localhost:44371/api/cartridges/bybarcode/{Barcode}");
+        employees = await Http.GetFromJsonAsync<IEnumerable<Employee>>("https://localhost:44371/api/employees");
+    }
+
+    private void Back()
+    {
+        navigationManager.NavigateTo("https://localhost:44312/cartridges/manage");
+    }
+
+    private async Task Confirm()
+    {
+        if (editContext != null && editContext.Validate())
+        {
+            evt.StatusId = 3;
+            evt.CartridgeId = cartridge.Id;
+            evt.FromDepartmentId = employees.Where(x => x.Id == evt.EmployeeId).First().DepartmentId;
+            await Http.PostAsJsonAsync("https://localhost:44371/api/events", evt);
+
+            Back();
+        }
+    }
+}

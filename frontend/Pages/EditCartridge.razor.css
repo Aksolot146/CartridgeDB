@@ -1,0 +1,54 @@
+﻿.topContainer {
+    margin-top: 4px;
+    margin-bottom: 4px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.buttonContainer {
+    margin-left: 10px;
+    margin-right: 4px;
+}
+
+tr:nth-child(odd) {
+    background-color: #ffffff;
+    color: #000000;
+    text-align: left;
+    text-anchor: start;
+}
+
+tr:nth-child(even) {
+    background-color: #eeeeee;
+    color: #3c6686;
+    text-align: left;
+    text-anchor: start;
+}
+
+tr:first-child {
+    background-color: #3c6686;
+    color: #ffffff;
+    text-align: center;
+    font-weight: 800;
+}
+
+td {
+    padding: 7px 30px;
+    border: 1px solid #cccccc;
+}
+
+    td.total {
+        background-color: #FFD4A9;
+    }
+
+    td.right {
+        text-align: left;
+    }
+
+    td.right {
+        margin-right: 1px;
+    }
+
+    td.left {
+        margin-left: 1px;
+    }

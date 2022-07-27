@@ -1,0 +1,75 @@
+﻿@page "/cartridges/manage"
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@using FrontendCartridges.Models
+@inject HttpClient Http
+@inject NavigationManager navigationManager
+
+<h3>Cartridge Manager</h3>
+
+<input id="Barcode" placeholder="Barcode" @bind-value="barcode" />
+<Button Type="button" Name="OK" Width="100" OnClick="OkAction" />
+<Button Type="button" Name="Cancel" Width="100" OnClick="Back" HasActive="true"></Button>
+
+@code {
+    private string barcode;
+
+    private void Back()
+    {
+        navigationManager.NavigateTo("https://localhost:44312/cartridges");
+    }
+
+    private async Task OkAction()
+    {
+        int status = await Http.GetFromJsonAsync<int>($"https://localhost:44371/api/cartridges/statusbybarcode/{barcode}");
+
+        switch (status)
+        {
+            case 1:
+                navigationManager.NavigateTo($"https://localhost:44312/cartridges/manage/give/{barcode}");
+                break;
+            case 2:
+                navigationManager.NavigateTo($"https://localhost:44312/cartridges/manage/confirm/{barcode}");
+                break;
+            case 3:
+                navigationManager.NavigateTo($"https://localhost:44312/cartridges/manage/repair/{barcode}");
+                break;
+        }
+    }
+
+    //private async Task Confirm()
+    //{
+    //    int status = await Http.GetFromJsonAsync<int>($"https://localhost:44371/api/cartridges/statusbybarcode/{barcode}");
+
+    //    switch (status)
+    //    {
+    //        case 1:
+    //            evt.EventDate = DateTime.Now;
+    //            evt.StatusId = 3;
+    //            evt.EmployeeId = employee2.Id; //???
+    //            evt.FromDepartmentId = 1; //1 - storage
+    //            evt.RepairId = null;
+    //            break;
+    //        case 2:
+    //            evt.EventDate = DateTime.Now;
+    //            evt.StatusId = 1;
+    //            evt.EmployeeId = 1; //1 - admin
+    //            evt.FromDepartmentId = 1; //1 - storage
+    //            evt.ToDepartmentId = 1; //1 - storage
+    //            evt.RepairId = repairs.Id;
+    //            repairs.BeginDate = DateTime.Now;
+    //            repairs.MechanicId = mechanic2.Id; //???
+    //            break;
+    //        case 3:
+    //            evt.EventDate = DateTime.Now;
+    //            evt.StatusId = 2;
+    //            evt.ToDepartmentId = departments.Id;
+    //            evt.EmployeeId = employee2.Id;
+    //            evt.FromDepartmentId = 1; //1 - storage
+    //            evt.RepairId = null;
+    //            break;
+    //    }
+    //    Back();
+    //}
+}

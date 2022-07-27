@@ -1,0 +1,44 @@
+﻿@page "/departments"
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@using FrontendCartridges.Models
+@inject HttpClient Http
+@inject NavigationManager navigationManager
+
+<h3>Departments</h3>
+<Button Name="Add" Width="100" OnClick="Add"></Button>
+
+@if (departments == null)
+{
+    <p>No departments found.</p>
+}
+else
+{
+    <table>
+        <tr>
+            <td>ID</td>
+            <td>Name</td>
+        </tr>
+        @foreach (var department in departments)
+        {
+            <tr>
+                <td>@department.Id</td>
+                <td>@department.Name</td>
+                <td><a href="@($"https://localhost:44312/departments/edit/{department.Id}")">Edit</a></td>
+            </tr>
+        }
+    </table>
+}
+
+@code {
+    private Department[] departments;
+
+    protected override async Task OnInitializedAsync() =>
+        departments = await Http.GetFromJsonAsync<Department[]>("https://localhost:44371/api/departments");
+
+    private void Add()
+    {
+        navigationManager.NavigateTo("https://localhost:44312/departments/add");
+    }
+}

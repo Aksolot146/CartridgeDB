@@ -1,0 +1,44 @@
+﻿@page "/cartridgetypes"
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@using FrontendCartridges.Models
+@inject HttpClient Http
+@inject NavigationManager navigationManager
+
+<h3>Cartridge Types</h3>
+<Button Name="Add" Width="100" OnClick="Add"></Button>
+
+@if (cartridgeTypes == null)
+{
+    <p>No cartridge types found.</p>
+}
+else
+{
+    <table>
+        <tr>
+            <td>ID</td>
+            <td>Name</td>
+        </tr>
+        @foreach (var cartridgeType in cartridgeTypes)
+        {
+            <tr>
+                <td>@cartridgeType.Id</td>
+                <td>@cartridgeType.FullName</td>
+                <td><a href="@($"https://localhost:44312/cartridgetypes/edit/{cartridgeType.Id}")">Edit</a></td>
+            </tr>
+        }
+    </table>
+}
+
+@code {
+    private CartridgeType[] cartridgeTypes;
+
+    protected override async Task OnInitializedAsync() =>
+        cartridgeTypes = await Http.GetFromJsonAsync<CartridgeType[]>("https://localhost:44371/api/cartridgetypes");
+
+    private void Add()
+    {
+        navigationManager.NavigateTo("https://localhost:44312/cartridgetypes/add");
+    }
+}
